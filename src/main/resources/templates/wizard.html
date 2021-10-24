@@ -1,0 +1,110 @@
+<!-- https://jpllosa.blogspot.com -->
+<!DOCTYPE HTML>
+<html xmlns:th="https://www.thymeleaf.org">
+<head> 
+    <title>Kendo Wizard POST to Spring Boot Example</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    
+    <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2021.1.224/styles/kendo.default-v2.min.css"/>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://kendo.cdn.telerik.com/2021.1.224/js/kendo.all.min.js"></script>
+</head>
+<body>
+	<div id="wizard"></div>
+
+<script>
+    var $wizard = $("#wizard");
+    var wizard = $wizard.kendoWizard({
+        validateForms: true,
+        steps: [{
+            title: "Sample Questionaire",
+            content: "Click <b>Next</b> to begin.",
+        },{
+            title: "Section 1",
+            form: {
+                formData: {
+                    section1answer1: "",
+                    section1answer2: "",
+                },
+                items: [{
+                    field: "section1answer1",
+                    label: "Some silly question 1:",
+                    validation: {
+                        required: true,
+                    },
+                },{
+                    field: "section1answer2",
+                    label: "Some silly question 2:",
+                    validation: {
+                        required: true,
+                    },
+                }],
+            },
+        },{
+            title: "Section 2",
+            form: {
+                formData: {
+                    section2answer1: "",
+                    section2answer2: "",
+                },
+                items: [{
+                    field: "section2answer1",
+                    label: "Another silly question 1:",
+                    validation: {
+                        required: true,
+                    },
+                },{
+                    field: "section2answer2",
+                    label: "Another silly question 2:",
+                    validation: {
+                        required: true,
+                    },
+                }],
+            },
+        },{
+            title: "Done",
+            content: "Thank you for answering.",
+        }],
+        done: function(e) {
+        	var forms = e.forms;
+        	var formData = new FormData();
+        	for (let a = 0; a < forms.length; a++) {
+        		var form = forms[a];
+        		for (let b = 0; b < form._fields.length; b++) {
+        			var field = form._fields[b];
+        			formData.append(field.field, form._model[field.field]);
+        		}
+        	}
+
+			$.ajax({
+				type: "POST",
+				url: "/wizard",
+				contentType: false, // do not send content type header
+				processData: false, // do not transform into a query string
+				data: formData,
+			})
+			.done(function(data, textStatus, jqXhr) {
+				// success = redirect to success page
+				if (textStatus === 'success') {
+					// post redirect get
+					// back-end can't redirect from ajax request
+					window.location.replace("/success");
+				}
+			})
+			.fail(function(jqXhr, textStatus, errorThrown) {
+				console.log("fail");
+			})
+			.always(function() {
+				console.log("always");
+			});
+        }
+    }).data('kendoWizard');
+</script>
+<style>
+    .k-stepper .k-step-label .k-step-text {
+        max-width: calc(30em - 20px);
+    }
+</style>
+</body>
+</html>
